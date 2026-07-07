@@ -1,646 +1,611 @@
 <!DOCTYPE html>
 <html lang="en-US">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Excel Cell Reference Highlight Colors</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
-            background: #f5f5f5;
-            min-height: 100vh;
-            color: #262626;
-        }
-
-        .title-bar {
-            background: #217346;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            padding: 0 12px;
-        }
-
-        .title-bar .filename {
-            color: #fff;
-            font-size: 12px;
-            opacity: 0.95;
-        }
-
-        .ribbon-tabs {
-            background: #f3f2f1;
-            border-bottom: 1px solid #e1dfdd;
-            display: flex;
-            padding: 0 10px;
-            font-size: 12px;
-            height: 36px;
-            align-items: flex-end;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-
-        .ribbon-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .ribbon-tab {
-            padding: 7px 14px 9px;
-            color: #323130;
-            cursor: default;
-            border: 1px solid transparent;
-            border-bottom: none;
-            border-radius: 4px 4px 0 0;
-            margin-right: 2px;
-            user-select: none;
-            font-weight: 400;
-            flex-shrink: 0;
-        }
-
-        .formula-bar {
-            background: #f3f2f1;
-            border-bottom: 1px solid #e1dfdd;
-            display: flex;
-            align-items: center;
-            padding: 3px 10px;
-            min-height: 26px;
-            flex-wrap: nowrap;
-        }
-
-        .name-box {
-            width: 82px;
-            min-width: 82px;
-            background: #fff;
-            border: 1px solid #8a8886;
-            padding: 2px 6px;
-            font-size: 11px;
-            font-family: Consolas, "Courier New", monospace;
-            border-radius: 2px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            color: #323130;
-            flex-shrink: 0;
-        }
-
-        .formula-fx {
-            color: #217346;
-            font-style: italic;
-            font-weight: 600;
-            font-size: 11px;
-            margin-left: 8px;
-            font-family: "Segoe UI", sans-serif;
-            flex-shrink: 0;
-            cursor: default;
-        }
-
-        .formula-input {
-            flex: 1;
-            background: #fff;
-            border: 1px solid #8a8886;
-            padding: 2px 10px;
-            font-size: 12px;
-            font-family: Consolas, "Courier New", monospace;
-            margin: 0 8px;
-            border-radius: 2px;
-            min-height: 22px;
-            display: flex;
-            align-items: center;
-            gap: 1px;
-            color: #323130;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        .formula-ref {
-            color: var(--ref-color);
-            font-size: 12px;
-            cursor: default;
-        }
-
-        .content-area {
-            background: #fff;
-            padding: 0;
-            min-height: calc(100vh - 100px);
-        }
-
-        .sheet-container {
-            padding: 16px 20px;
-        }
-
-        .sheet-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #323130;
-            margin-bottom: 3px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid #217346;
-        }
-
-        .sheet-subtitle {
-            font-size: 11px;
-            color: #605e5c;
-            margin-bottom: 16px;
-        }
-
-        .color-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 12px;
-        }
-
-        .color-card {
-            background: #fff;
-            cursor: pointer;
-            transition: box-shadow 0.15s ease;
-        }
-
-        .color-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .color-card:active {
-            transform: scale(0.995);
-        }
-
-        .excel-selection {
-            position: relative;
-            background: var(--bg-color);
-            padding: 14px 12px 12px 14px;
-            box-shadow: inset 0 0 0 2px var(--border-color);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .cell-ref {
-            font-family: Consolas, "Courier New", monospace;
-            font-size: 11px;
-            font-weight: 500;
-            color: #323130;
-            background: #fff;
-            border: 1px solid #c8c6c4;
-            padding: 2px 7px;
-            border-radius: 2px;
-            line-height: 1.4;
-        }
-
-        .card-title {
-            font-size: 11px;
-            color: #605e5c;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-
-        .copy-hint {
-            font-size: 10px;
-            color: #a19f9d;
-            opacity: 0;
-            transition: opacity 0.2s;
-            margin-left: auto;
-            font-style: italic;
-            line-height: 1.4;
-        }
-
-        .color-card:hover .copy-hint {
-            opacity: 1;
-        }
-
-        .color-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .color-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 8px;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #e1dfdd;
-            border-radius: 2px;
-            transition: all 0.1s;
-            min-height: 26px;
-        }
-
-        .color-row:hover {
-            background: #fff;
-            border-color: #c8c6c4;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .color-row .label {
-            font-size: 11px;
-            color: #605e5c;
-            width: 60px;
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-
-        .color-row .mini-swatch {
-            width: 14px;
-            height: 14px;
-            border: 1px solid #8a8886;
-            border-radius: 2px;
-            flex-shrink: 0;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-        }
-
-        .color-row .hex-value {
-            font-family: Consolas, "Courier New", monospace;
-            font-size: 11px;
-            color: #323130;
-            flex: 1;
-            letter-spacing: 0.3px;
-            user-select: all;
-        }
-
-        .site-info {
-            margin-top: 32px;
-            padding-top: 10px;
-            border-top: 1px solid #e1dfdd;
-            font-size: 10px;
-            color: #a19f9d;
-            line-height: 1.5;
-        }
-
-        .site-info p {
-            margin: 0 0 6px 0;
-        }
-
-        .site-info p:last-child {
-            margin-bottom: 0;
-        }
-
-        .copy-toast {
-            position: fixed;
-            bottom: 48px;
-            left: 50%;
-            transform: translateX(-50%) translateY(12px);
-            background: #fff;
-            color: #323130;
-            padding: 8px 18px;
-            border-radius: 4px;
-            font-size: 13px;
-            opacity: 0;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border: 1px solid #e1dfdd;
-            font-family: "Segoe UI", sans-serif;
-            will-change: transform, opacity;
-        }
-
-        .copy-toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        @media (max-width: 639px) {
-            .title-bar {
-                height: 40px;
-                padding: 0 12px;
-            }
-
-            .title-bar .filename {
-                font-size: 13px;
-            }
-
-            .ribbon-tabs {
-                height: 40px;
-                padding: 0 8px;
-                font-size: 13px;
-            }
-
-            .ribbon-tab {
-                padding: 8px 12px 10px;
-            }
-
-            .formula-bar {
-                flex-wrap: wrap;
-                padding: 6px 10px;
-                min-height: auto;
-            }
-
-            .name-box {
-                width: 70px;
-                min-width: 70px;
-                height: 28px;
-                font-size: 12px;
-            }
-
-            .formula-fx {
-                margin-left: 6px;
-                font-size: 12px;
-            }
-
-            .formula-input {
-                width: 100%;
-                margin: 6px 0 0 0;
-                order: 3;
-                min-height: 32px;
-                font-size: 13px;
-                padding: 4px 10px;
-                flex-wrap: wrap;
-            }
-
-            .sheet-container {
-                padding: 12px 10px;
-            }
-
-            .sheet-title {
-                font-size: 15px;
-            }
-
-            .sheet-subtitle {
-                font-size: 12px;
-                line-height: 1.5;
-            }
-
-            .color-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .excel-selection {
-                padding: 12px 10px 10px 12px;
-            }
-
-            .card-header {
-                flex-wrap: wrap;
-                gap: 6px;
-                margin-bottom: 8px;
-            }
-
-            .cell-ref {
-                font-size: 13px;
-                padding: 2px 7px;
-            }
-
-            .card-title {
-                font-size: 13px;
-            }
-
-            .copy-hint {
-                opacity: 1;
-                font-size: 11px;
-            }
-
-            .color-info {
-                gap: 5px;
-            }
-
-            .color-row {
-                padding: 6px 8px;
-            }
-
-            .color-row .label {
-                font-size: 12px;
-                width: 64px;
-            }
-
-            .color-row .hex-value {
-                font-size: 12px;
-            }
-
-            .mini-swatch {
-                width: 20px;
-                height: 20px;
-            }
-
-            .site-info {
-                margin-top: 24px;
-                font-size: 11px;
-            }
-
-            .copy-toast {
-                font-size: 14px;
-                padding: 10px 20px;
-                bottom: 24px;
-                width: 90%;
-                text-align: center;
-            }
-        }
-
-        @media (min-width: 640px) and (max-width: 1023px) {
-            .color-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .sheet-container {
-                padding: 16px 14px;
-            }
-        }
-
-        @media (min-width: 1024px) and (max-width: 1439px) {
-            .color-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .sheet-container {
-                padding: 20px 28px;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-        }
-
-        @media (min-width: 1440px) and (max-width: 1919px) {
-            .color-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 14px;
-            }
-
-            .sheet-container {
-                padding: 24px 40px;
-                max-width: 1600px;
-                margin: 0 auto;
-            }
-
-            .sheet-title {
-                font-size: 18px;
-            }
-
-            .sheet-subtitle {
-                font-size: 12px;
-            }
-        }
-
-        @media (min-width: 1920px) {
-            .color-grid {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 16px;
-            }
-
-            .sheet-container {
-                padding: 28px 52px;
-                max-width: 1920px;
-                margin: 0 auto;
-            }
-
-            .sheet-title {
-                font-size: 20px;
-            }
-
-            .sheet-subtitle {
-                font-size: 13px;
-            }
-
-            .excel-selection {
-                padding: 16px 14px 14px 16px;
-            }
-
-            .card-header {
-                gap: 10px;
-                margin-bottom: 12px;
-            }
-
-            .cell-ref {
-                font-size: 13px;
-                padding: 2px 8px;
-            }
-
-            .card-title {
-                font-size: 13px;
-            }
-
-            .color-info {
-                gap: 7px;
-            }
-
-            .color-row {
-                padding: 6px 10px;
-            }
-
-            .color-row .label {
-                font-size: 12px;
-                width: 64px;
-            }
-
-            .color-row .hex-value {
-                font-size: 12px;
-            }
-        }
-
-        @media (hover: none) and (pointer: coarse) {
-            .color-card:hover {
-                box-shadow: none;
-            }
-
-            .color-card:active {
-                transform: scale(0.98);
-            }
-
-            .copy-hint {
-                opacity: 1;
-            }
-
-            .color-row:hover {
-                background: rgba(255, 255, 255, 0.95);
-                border-color: #e1dfdd;
-                box-shadow: none;
-            }
-
-            .color-row:active {
-                background: #fff;
-                border-color: #c8c6c4;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-
-            .color-card,
-            .color-row,
-            .copy-hint,
-            .copy-toast {
-                transition: none;
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f3f2f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #c8c6c4;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a19f9d;
-        }
-    </style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+        <title>
+            Excel Cell Reference Colors
+        </title>
+        <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+                    background: #f5f5f5;
+                    min-height: 100vh;
+                    color: #262626;
+                }
+                .title-bar {
+                    background: #217346;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    padding: 0 12px;
+                }
+                .title-bar .filename {
+                    color: #fff;
+                    font-size: 12px;
+                    opacity: 0.95;
+                }
+                .ribbon-tabs {
+                    background: #f3f2f1;
+                    border-bottom: 1px solid #e1dfdd;
+                    display: flex;
+                    padding: 0 10px;
+                    font-size: 12px;
+                    height: 36px;
+                    align-items: flex-end;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                }
+                .ribbon-tabs::-webkit-scrollbar {
+                    display: none;
+                }
+                .ribbon-tab {
+                    padding: 7px 14px 9px;
+                    color: #323130;
+                    cursor: default;
+                    border: 1px solid transparent;
+                    border-bottom: none;
+                    border-radius: 4px 4px 0 0;
+                    margin-right: 2px;
+                    user-select: none;
+                    font-weight: 400;
+                    flex-shrink: 0;
+                }
+                .formula-bar {
+                    background: #f3f2f1;
+                    border-bottom: 1px solid #e1dfdd;
+                    display: flex;
+                    align-items: center;
+                    padding: 3px 10px;
+                    min-height: 26px;
+                    flex-wrap: nowrap;
+                }
+                .name-box {
+                    width: 82px;
+                    min-width: 82px;
+                    background: #fff;
+                    border: 1px solid #8a8886;
+                    padding: 2px 6px;
+                    font-size: 11px;
+                    font-family: Consolas, "Courier New", monospace;
+                    border-radius: 2px;
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                    color: #323130;
+                    flex-shrink: 0;
+                }
+                .formula-fx {
+                    color: #217346;
+                    font-style: italic;
+                    font-weight: 600;
+                    font-size: 11px;
+                    margin-left: 8px;
+                    font-family: "Segoe UI", sans-serif;
+                    flex-shrink: 0;
+                    cursor: default;
+                }
+                .formula-input {
+                    flex: 1;
+                    background: #fff;
+                    border: 1px solid #8a8886;
+                    padding: 2px 10px;
+                    font-size: 12px;
+                    font-family: Consolas, "Courier New", monospace;
+                    margin: 0 8px;
+                    border-radius: 2px;
+                    min-height: 22px;
+                    display: flex;
+                    align-items: center;
+                    gap: 1px;
+                    color: #323130;
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+                .formula-ref {
+                    color: var(--ref-color);
+                    font-size: 12px;
+                    cursor: default;
+                }
+                .content-area {
+                    background: #fff;
+                    padding: 0;
+                    min-height: calc(100vh - 100px);
+                }
+                .sheet-container {
+                    padding: 16px 20px;
+                }
+                .sheet-title {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #323130;
+                    margin-bottom: 3px;
+                    padding-bottom: 6px;
+                    border-bottom: 2px solid #217346;
+                }
+                .sheet-subtitle {
+                    font-size: 11px;
+                    color: #605e5c;
+                    margin-bottom: 16px;
+                }
+                .color-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                    gap: 12px;
+                }
+                .color-card {
+                    background: #fff;
+                    cursor: pointer;
+                    transition: box-shadow 0.15s ease;
+                }
+                .color-card:hover {
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                }
+                .color-card:active {
+                    transform: scale(0.995);
+                }
+                .excel-selection {
+                    position: relative;
+                    background: var(--bg-color);
+                    padding: 14px 12px 12px 14px;
+                    box-shadow: inset 0 0 0 2px var(--border-color);
+                }
+                .card-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 10px;
+                }
+                .cell-ref {
+                    font-family: Consolas, "Courier New", monospace;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: #323130;
+                    background: #fff;
+                    border: 1px solid #c8c6c4;
+                    padding: 2px 7px;
+                    border-radius: 2px;
+                    line-height: 1.4;
+                }
+                .card-title {
+                    font-size: 11px;
+                    color: #605e5c;
+                    font-weight: 500;
+                    line-height: 1.4;
+                }
+                .copy-hint {
+                    font-size: 10px;
+                    color: #a19f9d;
+                    opacity: 0;
+                    transition: opacity 0.2s;
+                    margin-left: auto;
+                    font-style: italic;
+                    line-height: 1.4;
+                }
+                .color-card:hover .copy-hint {
+                    opacity: 1;
+                }
+                .color-info {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+                .color-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 5px 8px;
+                    background: rgba(255, 255, 255, 0.95);
+                    border: 1px solid #e1dfdd;
+                    border-radius: 2px;
+                    transition: all 0.1s;
+                    min-height: 26px;
+                }
+                .color-row:hover {
+                    background: #fff;
+                    border-color: #c8c6c4;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                }
+                .color-row .label {
+                    font-size: 11px;
+                    color: #605e5c;
+                    width: 60px;
+                    font-weight: 500;
+                    flex-shrink: 0;
+                }
+                .color-row .mini-swatch {
+                    width: 14px;
+                    height: 14px;
+                    border: 1px solid #8a8886;
+                    border-radius: 2px;
+                    flex-shrink: 0;
+                    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+                }
+                .color-row .hex-value {
+                    font-family: Consolas, "Courier New", monospace;
+                    font-size: 11px;
+                    color: #323130;
+                    flex: 1;
+                    letter-spacing: 0.3px;
+                    user-select: all;
+                }
+                .site-info {
+                    margin-top: 32px;
+                    padding-top: 10px;
+                    border-top: 1px solid #e1dfdd;
+                    font-size: 10px;
+                    color: #a19f9d;
+                    line-height: 1.5;
+                }
+                .site-info p {
+                    margin: 0 0 6px 0;
+                }
+                .site-info p:last-child {
+                    margin-bottom: 0;
+                }
+                .copy-toast {
+                    position: fixed;
+                    bottom: 48px;
+                    left: 50%;
+                    transform: translateX(-50%) translateY(12px);
+                    background: #fff;
+                    color: #323130;
+                    padding: 8px 18px;
+                    border-radius: 4px;
+                    font-size: 13px;
+                    opacity: 0;
+                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                    pointer-events: none;
+                    z-index: 1000;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    border: 1px solid #e1dfdd;
+                    font-family: "Segoe UI", sans-serif;
+                    will-change: transform, opacity;
+                }
+                .copy-toast.show {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+                @media (max-width: 639px) {
+                    .title-bar {
+                        height: 40px;
+                        padding: 0 12px;
+                    }
+                    .title-bar .filename {
+                        font-size: 13px;
+                    }
+                    .ribbon-tabs {
+                        height: 40px;
+                        padding: 0 8px;
+                        font-size: 13px;
+                    }
+                    .ribbon-tab {
+                        padding: 8px 12px 10px;
+                    }
+                    .formula-bar {
+                        flex-wrap: wrap;
+                        padding: 6px 10px;
+                        min-height: auto;
+                    }
+                    .name-box {
+                        width: 70px;
+                        min-width: 70px;
+                        height: 28px;
+                        font-size: 12px;
+                    }
+                    .formula-fx {
+                        margin-left: 6px;
+                        font-size: 12px;
+                    }
+                    .formula-input {
+                        width: 100%;
+                        margin: 6px 0 0 0;
+                        order: 3;
+                        min-height: 32px;
+                        font-size: 13px;
+                        padding: 4px 10px;
+                        flex-wrap: wrap;
+                    }
+                    .sheet-container {
+                        padding: 12px 10px;
+                    }
+                    .sheet-title {
+                        font-size: 15px;
+                    }
+                    .sheet-subtitle {
+                        font-size: 12px;
+                        line-height: 1.5;
+                    }
+                    .color-grid {
+                        grid-template-columns: 1fr;
+                        gap: 10px;
+                    }
+                    .excel-selection {
+                        padding: 12px 10px 10px 12px;
+                    }
+                    .card-header {
+                        flex-wrap: wrap;
+                        gap: 6px;
+                        margin-bottom: 8px;
+                    }
+                    .cell-ref {
+                        font-size: 13px;
+                        padding: 2px 7px;
+                    }
+                    .card-title {
+                        font-size: 13px;
+                    }
+                    .copy-hint {
+                        opacity: 1;
+                        font-size: 11px;
+                    }
+                    .color-info {
+                        gap: 5px;
+                    }
+                    .color-row {
+                        padding: 6px 8px;
+                    }
+                    .color-row .label {
+                        font-size: 12px;
+                        width: 64px;
+                    }
+                    .color-row .hex-value {
+                        font-size: 12px;
+                    }
+                    .mini-swatch {
+                        width: 20px;
+                        height: 20px;
+                    }
+                    .site-info {
+                        margin-top: 24px;
+                        font-size: 11px;
+                    }
+                    .copy-toast {
+                        font-size: 14px;
+                        padding: 10px 20px;
+                        bottom: 24px;
+                        width: 90%;
+                        text-align: center;
+                    }
+                }
+                @media (min-width: 640px) and (max-width: 1023px) {
+                    .color-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+                    .sheet-container {
+                        padding: 16px 14px;
+                    }
+                }
+                @media (min-width: 1024px) and (max-width: 1439px) {
+                    .color-grid {
+                        grid-template-columns: repeat(3, 1fr);
+                    }
+                    .sheet-container {
+                        padding: 20px 28px;
+                        max-width: 1200px;
+                        margin: 0 auto;
+                    }
+                }
+                @media (min-width: 1440px) and (max-width: 1919px) {
+                    .color-grid {
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: 14px;
+                    }
+                    .sheet-container {
+                        padding: 24px 40px;
+                        max-width: 1600px;
+                        margin: 0 auto;
+                    }
+                    .sheet-title {
+                        font-size: 18px;
+                    }
+                    .sheet-subtitle {
+                        font-size: 12px;
+                    }
+                }
+                @media (min-width: 1920px) {
+                    .color-grid {
+                        grid-template-columns: repeat(5, 1fr);
+                        gap: 16px;
+                    }
+                    .sheet-container {
+                        padding: 28px 52px;
+                        max-width: 1920px;
+                        margin: 0 auto;
+                    }
+                    .sheet-title {
+                        font-size: 20px;
+                    }
+                    .sheet-subtitle {
+                        font-size: 13px;
+                    }
+                    .excel-selection {
+                        padding: 16px 14px 14px 16px;
+                    }
+                    .card-header {
+                        gap: 10px;
+                        margin-bottom: 12px;
+                    }
+                    .cell-ref {
+                        font-size: 13px;
+                        padding: 2px 8px;
+                    }
+                    .card-title {
+                        font-size: 13px;
+                    }
+                    .color-info {
+                        gap: 7px;
+                    }
+                    .color-row {
+                        padding: 6px 10px;
+                    }
+                    .color-row .label {
+                        font-size: 12px;
+                        width: 64px;
+                    }
+                    .color-row .hex-value {
+                        font-size: 12px;
+                    }
+                }
+                @media (hover: none) and (pointer: coarse) {
+                    .color-card:hover {
+                        box-shadow: none;
+                    }
+                    .color-card:active {
+                        transform: scale(0.98);
+                    }
+                    .copy-hint {
+                        opacity: 1;
+                    }
+                    .color-row:hover {
+                        background: rgba(255, 255, 255, 0.95);
+                        border-color: #e1dfdd;
+                        box-shadow: none;
+                    }
+                    .color-row:active {
+                        background: #fff;
+                        border-color: #c8c6c4;
+                    }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .color-card,
+                    .color-row,
+                    .copy-hint,
+                    .copy-toast {
+                        transition: none;
+                    }
+                }
+                ::-webkit-scrollbar {
+                    width: 8px;
+                    height: 8px;
+                }
+                ::-webkit-scrollbar-track {
+                    background: #f3f2f1;
+                }
+                ::-webkit-scrollbar-thumb {
+                    background: #c8c6c4;
+                    border-radius: 4px;
+                }
+                ::-webkit-scrollbar-thumb:hover {
+                    background: #a19f9d;
+                }
+        </style>
 </head>
-
 <body>
-
     <div class="title-bar">
-        <div class="filename">https://abarlett368.github.io/CellRefColors/CellRefColors.html</div>
-    </div>
-
-    <div class="ribbon-tabs">
-        <div class="ribbon-tab">File</div>
-        <div class="ribbon-tab">Home</div>
-        <div class="ribbon-tab">Insert</div>
-        <div class="ribbon-tab">Page Layout</div>
-        <div class="ribbon-tab">Formulas</div>
-        <div class="ribbon-tab">Data</div>
-        <div class="ribbon-tab">Review</div>
-        <div class="ribbon-tab">View</div>
-        <div class="ribbon-tab">Help</div>
-    </div>
-
-    <div class="formula-bar">
-        <div class="name-box">MS50</div>
-        <div class="formula-fx">fx</div>
-        <div class="formula-input">
-            <span>=AVERAGE(</span>
-            <span class="formula-ref" style="--ref-color:#326AC7;">A1</span>
-            <span>,</span>
-            <span class="formula-ref" style="--ref-color:#C0353E;">B1</span>
-            <span>,</span>
-            <span class="formula-ref" style="--ref-color:#8157B7;">C1</span>
-            <span>,</span>
-            <span class="formula-ref" style="--ref-color:#007C20;">D1</span>
-            <span>,</span>
-            <span class="formula-ref" style="--ref-color:#B03E84;">E1</span>
-            <span>,</span>
-            <span class="formula-ref" style="--ref-color:#B64900;">F1</span>
-            <span>,</span>
-            <span class="formula-ref" style="--ref-color:#267392;">G1</span>
-            <span>)</span>
+        <div class="filename">
+            https://abarlett368.github.io/CellRefColors/
         </div>
     </div>
-
+    <div class="ribbon-tabs">
+        <div class="ribbon-tab">
+            File
+        </div>
+        <div class="ribbon-tab">
+            Home
+        </div>
+        <div class="ribbon-tab">
+            Insert
+        </div>
+        <div class="ribbon-tab">
+            Page Layout
+        </div>
+        <div class="ribbon-tab">
+            Formulas
+        </div>
+        <div class="ribbon-tab">
+            Data
+        </div>
+        <div class="ribbon-tab">
+            Review
+        </div>
+        <div class="ribbon-tab">
+            View
+        </div>
+        <div class="ribbon-tab">
+            Help
+        </div>
+    </div>
+    <div class="formula-bar">
+        <div class="name-box">
+            MS50
+        </div>
+        <div class="formula-fx">
+            fx
+        </div>
+        <div class="formula-input">
+            <span>
+                =AVERAGE(
+            </span>
+            <span class="formula-ref" style="--ref-color:#326AC7;">
+                A1
+            </span>
+            <span>
+                ,
+            </span>
+            <span class="formula-ref" style="--ref-color:#C0353E;">
+                B1
+            </span>
+            <span>
+                ,
+            </span>
+            <span class="formula-ref" style="--ref-color:#8157B7;">
+                C1
+            </span>
+            <span>
+                ,
+            </span>
+            <span class="formula-ref" style="--ref-color:#007C20;">
+                D1
+            </span>
+            <span>
+                ,
+            </span>
+            <span class="formula-ref" style="--ref-color:#B03E84;">
+                E1
+            </span>
+            <span>
+                ,
+            </span>
+            <span class="formula-ref" style="--ref-color:#B64900;">
+                F1
+            </span>
+            <span>
+                ,
+            </span>
+            <span class="formula-ref" style="--ref-color:#267392;">
+                G1
+            </span>
+            <span>
+                )
+            </span>
+        </div>
+    </div>
     <div class="content-area">
         <div class="sheet-container">
-            <div class="sheet-title">Excel Cell Reference Colors</div>
-            <div class="sheet-subtitle">The 7 colors used to highlight cell references in Excel formulas. Click to copy.
+            <div class="sheet-title">
+                Excel Cell Reference Colors
             </div>
-
-            <div class="color-grid" id="colorGrid"></div>
-
+            <div class="sheet-subtitle">
+                The 7 color values for Excel's formula reference indicators (colored borders with light shading). Click to copy.
+            </div>
+            <div class="color-grid" id="colorGrid">
+            </div>
             <div class="site-info">
-                <p>DISCLAIMER AND LEGAL NOTICE<br>
-                    <i>Last Updated: July 7, 2026</i>
+                <p>
+                    DISCLAIMER AND LEGAL NOTICE
+                    <br>
+                    <i>
+                        Last Updated: July 7, 2026
+                    </i>
                 </p>
-
-                <p>This site is hosted on GitHub Pages. This site and its creator are not affiliated with, endorsed by,
+                <p>
+                    This site is hosted on GitHub Pages. This site and its creator are not affiliated with, endorsed by,
                     sponsored by, or connected to Microsoft Corporation. Microsoft, Excel, and all associated trade
                     dress, logos, user interface elements, and other intellectual property are the exclusive property of
                     Microsoft Corporation and are protected under applicable trademark, copyright, trade dress, and
@@ -650,9 +615,10 @@
                     affiliation with Microsoft Corporation is made or implied. This site does not replicate, replace, or
                     provide any functional interface to Microsoft Excel software or services, and does not access,
                     modify, or transmit any data to or from Microsoft products. All third-party trademarks referenced
-                    herein are the property of their respective owners.</p>
-
-                <p>The color values and technical information presented on this site are derived solely from independent
+                    herein are the property of their respective owners.
+                </p>
+                <p>
+                    The color values and technical information presented on this site are derived solely from independent
                     observation and extraction. No representation, warranty, or guarantee of any kind, whether express,
                     implied, statutory, or otherwise, including but not limited to warranties of accuracy, completeness,
                     reliability, timeliness, merchantability, fitness for a particular purpose, or non-infringement, is
@@ -662,9 +628,10 @@
                     Corporation at any time without notice. The information contained herein is furnished for general
                     reference purposes only and does not constitute professional, technical, or legal advice; it shall
                     not form the basis of any decision, action, or reliance by any person or entity for any purpose
-                    whatsoever.</p>
-
-                <p>To the fullest extent permitted by applicable law, the creator of this site expressly disclaims any
+                    whatsoever.
+                </p>
+                <p>
+                    To the fullest extent permitted by applicable law, the creator of this site expressly disclaims any
                     and all liability for any claim, loss, damage, or expense of any kind, including without limitation
                     direct, indirect, incidental, consequential, special, exemplary, or punitive damages, whether in
                     contract, tort, negligence, strict liability, or otherwise, arising out of or in connection with the
@@ -674,93 +641,86 @@
                     be subject to the exclusive jurisdiction of the state and federal courts located in San Francisco
                     County, California. If any provision of this disclaimer is held to be invalid, illegal, or
                     unenforceable, such provision shall be severed and the remaining provisions shall continue in full
-                    force and effect.</p>
+                    force and effect.
+                </p>
             </div>
         </div>
     </div>
-
-    <div class="copy-toast" id="copyToast">Copied</div>
-
-    <script>
-        const colors = [
-            { ref: "A1", name: "Color 1", border: "#326AC7", bg: "#EBF0F9" },
-            { ref: "B1", name: "Color 2", border: "#C0353E", bg: "#F9EBEC" },
-            { ref: "C1", name: "Color 3", border: "#8157B7", bg: "#F2EEF8" },
-            { ref: "D1", name: "Color 4", border: "#007C20", bg: "#E6F2E9" },
-            { ref: "E1", name: "Color 5", border: "#B03E84", bg: "#F7ECF3" },
-            { ref: "F1", name: "Color 6", border: "#B64900", bg: "#F8EDE6" },
-            { ref: "G1", name: "Color 7", border: "#267392", bg: "#E9F1F4" }
-        ];
-
-        const grid = document.getElementById("colorGrid");
-        const toast = document.getElementById("copyToast");
-        let toastTimer = null;
-
-        function showToast(text) {
-            toast.textContent = text;
-            toast.classList.add("show");
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
-        }
-
-        function copyText(text) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast("Copied");
-                }).catch(() => {
+    <div class="copy-toast" id="copyToast">
+        Copied
+    </div>
+        <script>
+                const colors = [
+                { ref: "A1", name: "Color 1", border: "#326AC7", bg: "#EBF0F9" },
+                { ref: "B1", name: "Color 2", border: "#C0353E", bg: "#F9EBEC" },
+                { ref: "C1", name: "Color 3", border: "#8157B7", bg: "#F2EEF8" },
+                { ref: "D1", name: "Color 4", border: "#007C20", bg: "#E6F2E9" },
+                { ref: "E1", name: "Color 5", border: "#B03E84", bg: "#F7ECF3" },
+                { ref: "F1", name: "Color 6", border: "#B64900", bg: "#F8EDE6" },
+                { ref: "G1", name: "Color 7", border: "#267392", bg: "#E9F1F4" }
+                ];
+                const grid = document.getElementById("colorGrid");
+                const toast = document.getElementById("copyToast");
+                let toastTimer = null;
+                function showToast(text) {
+                    toast.textContent = text;
+                    toast.classList.add("show");
+                    clearTimeout(toastTimer);
+                    toastTimer = setTimeout(() => toast.classList.remove("show"), 1400);
+                }
+            function copyText(text) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast("Copied");
+                    }).catch(() => {
                     fallbackCopy(text);
                 });
-            } else {
-                fallbackCopy(text);
-            }
-        }
-
-        function fallbackCopy(text) {
-            const ta = document.createElement("textarea");
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand("copy");
-            document.body.removeChild(ta);
-            showToast("Copied");
-        }
-
-        colors.forEach(c => {
-            const card = document.createElement("div");
-            card.className = "color-card";
-            card.innerHTML = `
+        } else {
+        fallbackCopy(text);
+    }
+    }
+    function fallbackCopy(text) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast("Copied");
+    }
+    colors.forEach(c => {
+        const card = document.createElement("div");
+        card.className = "color-card";
+        card.innerHTML = `
         <div class="excel-selection" style="--border-color:${c.border};--bg-color:${c.bg};">
-            <div class="card-header">
-                <span class="cell-ref">${c.ref}</span>
-                <span class="card-title">${c.name}</span>
-                <span class="copy-hint">Click to copy</span>
-            </div>
-            <div class="color-info">
-                <div class="color-row" data-hex="${c.border}">
-                    <span class="label">Outline</span>
-                    <div class="mini-swatch" style="background:${c.border}"></div>
-                    <span class="hex-value">${c.border}</span>
-                </div>
-                <div class="color-row" data-hex="${c.bg}">
-                    <span class="label">Fill</span>
-                    <div class="mini-swatch" style="background:${c.bg}"></div>
-                    <span class="hex-value">${c.bg}</span>
-                </div>
-            </div>
+        <div class="card-header">
+        <span class="cell-ref">${c.ref}</span>
+        <span class="card-title">${c.name}</span>
+        <span class="copy-hint">Click to copy</span>
         </div>
-    `;
-            grid.appendChild(card);
-        });
-
-        grid.addEventListener("click", function (e) {
-            const row = e.target.closest(".color-row");
-            if (!row) return;
-            e.preventDefault();
-            e.stopPropagation();
-            copyText(row.dataset.hex);
-        });
-    </script>
-
+        <div class="color-info">
+        <div class="color-row" data-hex="${c.border}">
+        <span class="label">Border</span>
+        <div class="mini-swatch" style="background:${c.border}"></div>
+        <span class="hex-value">${c.border}</span>
+        </div>
+        <div class="color-row" data-hex="${c.bg}">
+        <span class="label">Shading</span>
+        <div class="mini-swatch" style="background:${c.bg}"></div>
+        <span class="hex-value">${c.bg}</span>
+        </div>
+        </div>
+        </div>
+        `;
+        grid.appendChild(card);
+    });
+    grid.addEventListener("click", function (e) {
+        const row = e.target.closest(".color-row");
+        if (!row) return;
+        e.preventDefault();
+        e.stopPropagation();
+        copyText(row.dataset.hex);
+    });
+        </script>
 </body>
-
 </html>
