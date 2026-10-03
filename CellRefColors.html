@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+        <meta name="description" content="The 7 colors Excel uses to highlight cell references in formulas, each with a border and fill color. Select a color to copy it.">
+        <meta name="theme-color" content="#217346">
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23217346'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23ffffff' font-family='Arial,sans-serif' font-weight='bold'%3EX%3C/text%3E%3C/svg%3E">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Excel Cell Reference Colors">
+        <meta property="og:title" content="Excel Cell Reference Colors">
+        <meta property="og:description" content="The 7 colors Excel uses to highlight cell references in formulas.">
+        <meta property="og:url" content="https://abarlett368.github.io/CellRefColors/CellRefColors.html">
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="Excel Cell Reference Colors">
+        <meta name="twitter:description" content="The 7 colors Excel uses to highlight cell references in formulas.">
+        <title>
+            Excel Cell Reference Colors
+        </title>
+        <style>
+                :root {
+                    --font-ui: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+                    --font-mono: Consolas, "Courier New", monospace;
+                    --font-cell: Calibri, Candara, "Segoe UI", sans-serif;
+                    --color-accent: #217346;
+                    --color-text: #323130;
+                    --color-muted: #605e5c;
+                    --color-subtle: #6e6a68;
+                    --color-background: #f5f5f5;
+                    --color-ribbon: #f3f2f1;
+                    --color-surface: #fff;
+                    --color-border: #e1dfdd;
+                    --color-border-strong: #c8c6c4;
+                    --color-control-border: #8a8886;
+                    --color-focus: #005fcc;
+                    --color-ribbon-text: #323130;
+                    --color-fx: #217346;
+                    --color-row-background: rgba(255, 255, 255, 0.95);
+                    --transition-toast: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body {
+                    font-family: var(--font-ui);
+                    background: var(--color-background);
+                    min-height: 100vh;
+                    color: var(--color-text);
+                    display: flex;
+                    flex-direction: column;
+                }
+                .title-bar {
+                    background: var(--color-accent);
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    padding: 0 12px;
+                }
+                .title-bar .filename {
+                    color: var(--color-surface);
+                    font-size: 12px;
+                    opacity: 0.95;
+                }
+                .ribbon-tabs {
+                    background: var(--color-ribbon);
+                    border-bottom: 1px solid var(--color-border);
+                    display: flex;
+                    padding: 0 12px;
+                    font-size: 12px;
+                    height: 36px;
+                    align-items: flex-end;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    scrollbar-width: none;
+                }
+                .ribbon-tabs::-webkit-scrollbar {
+                    display: none;
+                }
+                .ribbon-tab {
+                    padding: 7px 14px 9px;
+                    color: var(--color-ribbon-text);
+                    cursor: default;
+                    border: 1px solid transparent;
+                    border-bottom: none;
+                    margin-right: 2px;
+                    user-select: none;
+                    font-weight: 400;
+                    flex-shrink: 0;
+                }
+                .formula-bar {
+                    background: var(--color-ribbon);
+                    border-bottom: 1px solid var(--color-border);
+                    display: flex;
+                    align-items: center;
+                    padding: 2px 12px;
+                    min-height: 36px;
+                    flex-wrap: nowrap;
+                }
+                .name-box {
+                    width: 82px;
+                    min-width: 82px;
+                    background: var(--color-surface);
+                    border: 1px solid var(--color-control-border);
+                    padding: 2px 6px;
+                    font-size: 11px;
+                    font-family: var(--font-cell);
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                    color: var(--color-text);
+                    flex-shrink: 0;
+                }
+                .formula-fx {
+                    color: var(--color-fx);
+                    font-style: italic;
+                    font-weight: 400;
+                    font-size: 11px;
+                    margin-left: 8px;
+                    font-family: var(--font-ui);
+                    flex-shrink: 0;
+                    cursor: default;
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                }
+                .formula-input {
+                    flex: 1;
+                    background: var(--color-surface);
+                    border: 1px solid var(--color-control-border);
+                    padding: 2px 10px;
+                    font-size: 11px;
+                    font-family: var(--font-cell);
+                    margin: 0 8px;
+                    min-height: 22px;
+                    display: flex;
+                    align-items: center;
+                    gap: 1px;
+                    color: var(--color-text);
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
+                .formula-ref {
+                    color: var(--ref-color);
+                    font-size: 11px;
+                    cursor: default;
+                }
+                .content-area {
+                    background: var(--color-surface);
+                    padding: 0;
+                    flex: 1;
+                }
+                .sheet-container {
+                    padding: 16px 20px;
+                }
+                .sheet-title {
+                    font-size: 17px;
+                    font-weight: 400;
+                    letter-spacing: -0.2px;
+                    color: var(--color-text);
+                    margin-bottom: 3px;
+                    padding-bottom: 6px;
+                    border-bottom: 2px solid var(--color-accent);
+                }
+                .sheet-subtitle {
+                    font-size: 12px;
+                    line-height: 1.6;
+                    color: var(--color-muted);
+                    margin-bottom: 18px;
+                }
+                .no-script-note {
+                    font-size: 12px;
+                    color: var(--color-muted);
+                }
+                .color-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                    gap: 12px;
+                }
+                .color-card {
+                    background: transparent;
+                    transition: box-shadow 0.15s ease;
+                }
+                .color-card:hover {
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                }
+                .color-card:active {
+                    transform: scale(0.995);
+                }
+                .excel-selection {
+                    position: relative;
+                    background: var(--bg-color);
+                    background:
+                        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E") 0 0 / 120px 120px,
+                        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 35%, rgba(0, 0, 0, 0.02)),
+                        color-mix(in srgb, var(--border-color) 8%, color-mix(in srgb, var(--bg-color) 78%, transparent));
+                    padding: 14px 12px 12px 14px;
+                    box-shadow:
+                        inset 0 0 0 2px var(--border-color),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+                    backdrop-filter: blur(28px) saturate(1.18);
+                    -webkit-backdrop-filter: blur(28px) saturate(1.18);
+                }
+                .card-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 8px;
+                }
+                .cell-ref {
+                    font-family: var(--font-cell);
+                    font-size: 12px;
+                    font-weight: 400;
+                    color: var(--ref-color, var(--color-text));
+                    line-height: 1.4;
+                }
+                .card-title {
+                    font-family: var(--font-cell);
+                    font-size: 12px;
+                    color: var(--color-muted);
+                    font-weight: 400;
+                    line-height: 1.4;
+                }
+                .color-info {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                .color-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 6px 10px;
+                    background: var(--color-row-background);
+                    border: 1px solid var(--color-border);
+                    transition: all 0.15s ease;
+                    min-height: 30px;
+                    width: 100%;
+                    color: inherit;
+                    font: inherit;
+                    text-align: left;
+                    cursor: pointer;
+                }
+                .color-row:focus-visible {
+                    outline: 3px solid var(--color-focus);
+                    outline-offset: 2px;
+                }
+                .color-row:hover {
+                    background:
+                        linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 60%),
+                        var(--color-surface);
+                    border-color: var(--color-border-strong);
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                }
+                .color-row .label {
+                    font-size: 11px;
+                    color: var(--color-muted);
+                    width: 60px;
+                    font-weight: 400;
+                    letter-spacing: 0.4px;
+                    flex-shrink: 0;
+                }
+                .color-row .mini-swatch {
+                    width: 14px;
+                    height: 14px;
+                    flex-shrink: 0;
+                }
+                .color-row .hex-value {
+                    font-family: var(--font-mono);
+                    font-size: 12px;
+                    font-weight: 400;
+                    color: var(--color-text);
+                    flex: 1;
+                    letter-spacing: 0.3px;
+                    font-variant-numeric: tabular-nums;
+                }
+                .site-info {
+                    margin-top: 32px;
+                    padding-top: 10px;
+                    border-top: 1px solid var(--color-border);
+                    font-size: 11px;
+                    color: var(--color-subtle);
+                    line-height: 1.5;
+                }
+                .site-info p {
+                    margin: 0 0 6px 0;
+                }
+                .site-info .legal-title {
+                    font-size: 12px;
+                    letter-spacing: 0.3px;
+                    font-weight: 400;
+                }
+                .site-info p:last-child {
+                    margin-bottom: 0;
+                }
+                .copy-toast {
+                    position: fixed;
+                    bottom: 48px;
+                    left: 50%;
+                    transform: translateX(-50%) translateY(12px);
+                    background: var(--color-surface);
+                    color: var(--color-text);
+                    padding: 8px 18px;
+                    font-size: 13px;
+                    opacity: 0;
+                    transition: var(--transition-toast);
+                    pointer-events: none;
+                    z-index: 1000;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    border: 1px solid var(--color-border);
+                    font-family: var(--font-ui);
+                    will-change: transform, opacity;
+                }
+                .copy-toast.show {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                }
+                @media (max-width: 639px) {
+                    .title-bar {
+                        height: 40px;
+                        padding: 0 12px;
+                    }
+                    .title-bar .filename {
+                        font-size: 13px;
+                    }
+                    .ribbon-tabs {
+                        height: 40px;
+                        padding: 0 12px;
+                        font-size: 13px;
+                    }
+                    .ribbon-tab {
+                        padding: 8px 12px 10px;
+                    }
+                    .formula-bar {
+                        flex-wrap: nowrap;
+                        padding: 2px 12px;
+                        min-height: 40px;
+                    }
+                    .name-box {
+                        width: 64px;
+                        min-width: 64px;
+                        height: 22px;
+                        font-size: 11px;
+                    }
+                    .formula-fx {
+                        margin-left: 6px;
+                        font-size: 11px;
+                        height: 22px;
+                        display: flex;
+                        align-items: center;
+                    }
+                    .formula-input {
+                        flex: 1;
+                        margin: 0 6px;
+                        min-height: 22px;
+                        font-size: 11px;
+                        padding: 2px 8px;
+                    }
+                    .sheet-container {
+                        padding: 12px 10px;
+                    }
+                    .sheet-title {
+                        font-size: 15px;
+                    }
+                    .sheet-subtitle {
+                        font-size: 12px;
+                        line-height: 1.5;
+                    }
+                    .color-grid {
+                        grid-template-columns: 1fr;
+                        gap: 10px;
+                    }
+                    .excel-selection {
+                        padding: 12px 10px 10px 12px;
+                    }
+                    .card-header {
+                        flex-wrap: wrap;
+                        gap: 6px;
+                        margin-bottom: 8px;
+                    }
+                    .cell-ref {
+                        font-size: 13px;
+                    }
+                    .card-title {
+                        font-size: 13px;
+                    }
+                    .color-info {
+                        gap: 5px;
+                    }
+                    .color-row {
+                        padding: 6px 8px;
+                    }
+                    .color-row .label {
+                        font-size: 12px;
+                        width: 64px;
+                    }
+                    .color-row .hex-value {
+                        font-size: 12px;
+                    }
+                    .mini-swatch {
+                        width: 20px;
+                        height: 20px;
+                    }
+                    .site-info {
+                        margin-top: 24px;
+                        font-size: 11px;
+                    }
+                    .copy-toast {
+                        font-size: 14px;
+                        padding: 10px 20px;
+                        bottom: 24px;
+                        width: 90%;
+                        text-align: center;
+                    }
+                }
+                @media (min-width: 640px) and (max-width: 1023px) {
+                    .color-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+                    .sheet-container {
+                        padding: 16px 14px;
+                    }
+                }
+                @media (min-width: 1024px) and (max-width: 1439px) {
+                    .color-grid {
+                        grid-template-columns: repeat(3, 1fr);
+                    }
+                    .sheet-container {
+                        padding: 20px 28px;
+                        max-width: 1200px;
+                        margin: 0 auto;
+                    }
+                }
+                @media (min-width: 1440px) and (max-width: 1919px) {
+                    .color-grid {
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: 14px;
+                    }
+                    .sheet-container {
+                        padding: 24px 40px;
+                        max-width: 1600px;
+                        margin: 0 auto;
+                    }
+                    .sheet-title {
+                        font-size: 18px;
+                    }
+                    .sheet-subtitle {
+                        font-size: 12px;
+                    }
+                }
+                @media (min-width: 1920px) {
+                    .color-grid {
+                        grid-template-columns: repeat(5, 1fr);
+                        gap: 16px;
+                    }
+                    .sheet-container {
+                        padding: 28px 52px;
+                        max-width: 1920px;
+                        margin: 0 auto;
+                    }
+                    .sheet-title {
+                        font-size: 20px;
+                    }
+                    .sheet-subtitle {
+                        font-size: 13px;
+                    }
+                    .excel-selection {
+                        padding: 16px 14px 14px 16px;
+                    }
+                    .card-header {
+                        gap: 10px;
+                        margin-bottom: 12px;
+                    }
+                    .cell-ref {
+                        font-size: 13px;
+                    }
+                    .card-title {
+                        font-size: 13px;
+                    }
+                    .color-info {
+                        gap: 7px;
+                    }
+                    .color-row {
+                        padding: 6px 10px;
+                    }
+                    .color-row .label {
+                        font-size: 12px;
+                        width: 64px;
+                    }
+                    .color-row .hex-value {
+                        font-size: 12px;
+                    }
+                }
+                @media (hover: none) and (pointer: coarse) {
+                    .color-card:hover {
+                        box-shadow: none;
+                    }
+                    .color-card:active {
+                        transform: scale(0.98);
+                    }
+                    .color-row:hover {
+                        background: var(--color-row-background);
+                        border-color: var(--color-border);
+                        box-shadow: none;
+                    }
+                    .color-row:active {
+                        background: var(--color-surface);
+                        border-color: var(--color-border-strong);
+                    }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .color-card,
+                    .color-row,
+                    .copy-toast {
+                        transition: none;
+                    }
+                }
+                @media (prefers-color-scheme: dark) {
+                    :root {
+                        --color-background: #201f1e;
+                        --color-ribbon: #2d2c2b;
+                        --color-border: #3f3d3b;
+                        --color-border-strong: #605e5c;
+                        --color-control-border: #797775;
+                        --color-focus: #4f9be8;
+                        --color-ribbon-text: #e8e6e3;
+                        --color-fx: #5cb381;
+                    }
+                }
+                ::-webkit-scrollbar {
+                    width: 8px;
+                    height: 8px;
+                }
+                ::-webkit-scrollbar-track {
+                    background: var(--color-ribbon);
+                }
+                ::-webkit-scrollbar-thumb {
+                    background: var(--color-border-strong);
+                }
+                ::-webkit-scrollbar-thumb:hover {
+                    background: var(--color-subtle);
+                }
+        </style>
+</head>
+<body>
+    <div class="title-bar">
+        <div class="filename" aria-hidden="true">
+            https://abarlett368.github.io/CellRefColors
+        </div>
+    </div>
+    <div class="ribbon-tabs" aria-hidden="true">
+        <div class="ribbon-tab">
+            File
+        </div>
+        <div class="ribbon-tab">
+            Home
+        </div>
+        <div class="ribbon-tab">
+            Insert
+        </div>
+        <div class="ribbon-tab">
+            Page Layout
+        </div>
+        <div class="ribbon-tab">
+            Formulas
+        </div>
+        <div class="ribbon-tab">
+            Data
+        </div>
+        <div class="ribbon-tab">
+            Review
+        </div>
+        <div class="ribbon-tab">
+            View
+        </div>
+        <div class="ribbon-tab">
+            Help
+        </div>
+    </div>
+    <div class="formula-bar">
+        <div class="name-box" aria-hidden="true">
+            MS50
+        </div>
+        <div class="formula-fx" aria-hidden="true">
+            fx
+        </div>
+        <div class="formula-input" id="formulaInput" role="img" aria-label="Example formula that shows cell reference colors">
+        </div>
+    </div>
+    <div class="content-area">
+        <div class="sheet-container">
+            <h1 class="sheet-title">
+                Excel Cell Reference Colors
+            </h1>
+            <div class="sheet-subtitle">
+                The 7 colors Excel uses to highlight cell references in formulas, each with a border and fill color. Select a color to copy it.
+            </div>
+            <div class="color-grid" id="colorGrid">
+            </div>
+            <noscript>
+                <p class="no-script-note">
+                    This page requires JavaScript to show the colors.
+                </p>
+            </noscript>
+            <div class="site-info">
+                <p>
+                    <strong class="legal-title">DISCLAIMER AND TERMS OF USE</strong>
+                    <br>
+                    <i>
+                        Last updated: October 3, 2026
+                    </i>
+                </p>
+                <p>
+                    1. ABOUT THIS SITE
+                    <br>
+                    This website and its associated repository (the "Site") list the hexadecimal color values that
+                    Microsoft Excel uses to highlight cell references in formulas. Its content is provided for
+                    general reference only and does not constitute professional, technical, or legal advice.
+                </p>
+                <p>
+                    2. INDEPENDENT OPERATION
+                    <br>
+                    The Site is independently created and operated by the Author. It is not affiliated with,
+                    endorsed by, or connected with Microsoft Corporation. Microsoft, Excel, and related names are
+                    trademarks of Microsoft Corporation, used here only to identify the products discussed. Nothing
+                    on the Site grants any license to use these trademarks.
+                </p>
+                <p>
+                    3. NON-OFFICIAL INFORMATION
+                    <br>
+                    The color values are based solely on the Author's independent observation. They are not official
+                    Microsoft specifications, have not been verified or approved by Microsoft, and may be inaccurate,
+                    outdated, or changed at any time without notice. The Author has no obligation to update or
+                    correct them.
+                </p>
+                <p>
+                    4. DISCLAIMER OF WARRANTIES
+                    <br>
+                    TO THE FULLEST EXTENT PERMITTED BY LAW, THE SITE AND ITS CONTENT ARE PROVIDED "AS IS" AND "AS
+                    AVAILABLE," WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING IMPLIED
+                    WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. THE
+                    AUTHOR DOES NOT WARRANT THAT THE SITE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
+                </p>
+                <p>
+                    5. LIMITATION OF LIABILITY
+                    <br>
+                    TO THE FULLEST EXTENT PERMITTED BY LAW, THE AUTHOR IS NOT LIABLE FOR ANY DIRECT, INDIRECT,
+                    INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA,
+                    PROFITS, REVENUE, OR GOODWILL, ARISING FROM YOUR USE OF, OR INABILITY TO USE, THE SITE OR ITS
+                    CONTENT. NOTHING HEREIN LIMITS ANY LIABILITY THAT CANNOT BE LIMITED UNDER APPLICABLE LAW.
+                </p>
+                <p>
+                    6. INTELLECTUAL PROPERTY
+                    <br>
+                    No copyright is claimed in the color values, which are factual information, and you may copy
+                    them for any lawful purpose. The Site's text, layout, and source code are owned by the Author,
+                    except as otherwise permitted by GitHub's terms of service or applicable law.
+                </p>
+                <p>
+                    7. PRIVACY
+                    <br>
+                    The Site does not use cookies, analytics, or other tracking and does not collect personal data.
+                    It is hosted on GitHub Pages, which may log technical data such as IP addresses in accordance
+                    with GitHub's Privacy Statement. Hosting on GitHub Pages does not imply that GitHub or Microsoft
+                    owns, operates, reviews, verifies, approves, sponsors, or endorses the Site.
+                </p>
+                <p>
+                    8. COMPLAINTS AND DISPUTES
+                    <br>
+                    If you believe any content infringes your rights, or if you have any other concern regarding the
+                    Site, open an issue in the CellRefColors repository (https://github.com/abarlett368/CellRefColors).
+                    The Author may review it and, where appropriate, remove or disable access to the disputed content.
+                    The parties should attempt to resolve any dispute informally before formal proceedings.
+                </p>
+                <p>
+                    9. GENERAL
+                    <br>
+                    The Site, its content, and this notice may change at any time without notice. To the extent
+                    permitted by law, this notice is governed by the laws of the jurisdiction in which the Author is
+                    domiciled, and nothing in this notice deprives you of any right granted by the mandatory law of
+                    your place of residence. If any part of this notice is unenforceable, the remaining parts remain
+                    in effect. No failure or delay in exercising a right under this notice constitutes a waiver of
+                    that right. Section headings are for convenience only and do not affect interpretation. Nothing
+                    in this notice confers any rights on any person other than you and the Author.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="copy-toast" id="copyToast" role="status" aria-live="polite" aria-atomic="true"></div>
+        <script>
+            (() => {
+                const COLOR_PALETTE = [
+                { ref: "A1", name: "Color 1", border: "#326AC7", bg: "#EBF0F9" },
+                { ref: "B1", name: "Color 2", border: "#C0353E", bg: "#F9EBEC" },
+                { ref: "C1", name: "Color 3", border: "#8157B7", bg: "#F2EEF8" },
+                { ref: "D1", name: "Color 4", border: "#007C20", bg: "#E6F2E9" },
+                { ref: "E1", name: "Color 5", border: "#B03E84", bg: "#F7ECF3" },
+                { ref: "F1", name: "Color 6", border: "#B64900", bg: "#F8EDE6" },
+                { ref: "G1", name: "Color 7", border: "#267392", bg: "#E9F1F4" }
+            ];
+            const CONFIG = Object.freeze({
+                elements: Object.freeze({
+                    grid: document.getElementById("colorGrid"),
+                    formulaInput: document.getElementById("formulaInput"),
+                    status: document.getElementById("copyToast")
+                }),
+                formula: Object.freeze({
+                    prefix: "=AVERAGE(",
+                    separator: ", ",
+                    suffix: ")"
+                }),
+                colorFields: Object.freeze([
+                    Object.freeze({ key: "border", label: "Border" }),
+                    Object.freeze({ key: "bg", label: "Fill" })
+                ]),
+                copySelector: "button[data-hex]",
+                copiedMessage: hex => `Copied ${hex}.`,
+                failedMessage: hex => `Could not copy ${hex}. Select the color to copy it manually.`,
+                timing: Object.freeze({
+                    announcementDelay: 50,
+                    statusDuration: 2400
+                })
+            });
+            const { grid, formulaInput, status } = CONFIG.elements;
+            const timers = { status: null, announcement: null };
+
+            function showStatus(message) {
+                status.classList.add("show");
+                clearTimeout(timers.status);
+                clearTimeout(timers.announcement);
+                status.textContent = "";
+                timers.announcement = setTimeout(() => {
+                    status.textContent = message;
+                }, CONFIG.timing.announcementDelay);
+                timers.status = setTimeout(() => status.classList.remove("show"), CONFIG.timing.statusDuration);
+            }
+
+            function renderFormula() {
+                formulaInput.append(CONFIG.formula.prefix);
+                COLOR_PALETTE.forEach((color, index) => {
+                    if (index > 0) formulaInput.append(CONFIG.formula.separator);
+                    const reference = document.createElement("span");
+                    reference.className = "formula-ref";
+                    reference.style.setProperty("--ref-color", color.border);
+                    reference.textContent = color.ref;
+                    formulaInput.appendChild(reference);
+                });
+                formulaInput.append(CONFIG.formula.suffix);
+            }
+
+            function createCopyButton(color, field) {
+                const hex = color[field.key];
+                const button = document.createElement("button");
+                button.className = "color-row";
+                button.type = "button";
+                button.dataset.hex = hex;
+                button.setAttribute("aria-label", `Copy ${field.label.toLowerCase()} color ${hex} for ${color.ref}`);
+
+                const rowLabel = document.createElement("span");
+                rowLabel.className = "label";
+                rowLabel.textContent = field.label;
+
+                const swatch = document.createElement("span");
+                swatch.className = "mini-swatch";
+                swatch.style.backgroundColor = hex;
+                swatch.setAttribute("aria-hidden", "true");
+
+                const value = document.createElement("span");
+                value.className = "hex-value";
+                value.textContent = hex;
+
+                button.append(rowLabel, swatch, value);
+                return button;
+            }
+
+            function renderColors() {
+                COLOR_PALETTE.forEach(color => {
+                    const card = document.createElement("article");
+                    card.className = "color-card";
+
+                    const selection = document.createElement("div");
+                    selection.className = "excel-selection";
+                    selection.style.setProperty("--border-color", color.border);
+                    selection.style.setProperty("--bg-color", color.bg);
+
+                    const header = document.createElement("div");
+                    header.className = "card-header";
+
+                    const reference = document.createElement("span");
+                    reference.className = "cell-ref";
+                    reference.style.setProperty("--ref-color", color.border);
+                    reference.textContent = color.ref;
+
+                    const title = document.createElement("span");
+                    title.className = "card-title";
+                    title.textContent = color.name;
+
+                    header.append(reference, title);
+
+                    const info = document.createElement("div");
+                    info.className = "color-info";
+                    info.append(...CONFIG.colorFields.map(field => createCopyButton(color, field)));
+
+                    selection.append(header, info);
+                    card.appendChild(selection);
+                    grid.appendChild(card);
+                });
+            }
+
+            function fallbackCopy(text) {
+                const textarea = document.createElement("textarea");
+                const previousFocus = document.activeElement;
+                textarea.value = text;
+                textarea.setAttribute("readonly", "");
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+
+                let copied = false;
+                try {
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    textarea.setSelectionRange(0, textarea.value.length);
+                    copied = document.execCommand("copy");
+                } catch {
+                    copied = false;
+                } finally {
+                    textarea.remove();
+                    if (previousFocus !== document.body && previousFocus.isConnected) {
+                        previousFocus.focus();
+                    }
+                }
+                return copied;
+            }
+
+            async function copyText(text) {
+                let copied = false;
+                if (navigator.clipboard && window.isSecureContext) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        copied = true;
+                    } catch {
+                        copied = fallbackCopy(text);
+                    }
+                } else {
+                    copied = fallbackCopy(text);
+                }
+
+                showStatus(copied ? CONFIG.copiedMessage(text) : CONFIG.failedMessage(text));
+            }
+
+            renderFormula();
+            renderColors();
+
+            grid.addEventListener("click", event => {
+                const button = event.target.closest(CONFIG.copySelector);
+                if (!button) return;
+                copyText(button.dataset.hex);
+            });
+            })();
+        </script>
+</body>
+</html>
